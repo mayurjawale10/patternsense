@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #7f77dd;
+  --color-teal: #1d9e75;
+  --color-amber: #ef9f27;
+  --color-coral: #d85a30;
+  --color-bg-dark: #0b0d12;
+  --color-bg-light: #f8fafc;
+  --font-sans: Inter, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+html.dark { color-scheme: dark; }
+html.light { color-scheme: light; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+html.dark body { background: var(--color-bg-dark); color: #f4f4f5; }
+html.light body { background: var(--color-bg-light); color: #18181b; }
+
+#root { min-height: 100vh; }
+
+.input-field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #f4f4f5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-field:focus { border-color: #7f77dd; }
+.input-field::placeholder { color: #71717a; }
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(127, 119, 221, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.page-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #71717a;
+}
+
+html.dark ::-webkit-scrollbar { width: 8px; height: 8px; }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }

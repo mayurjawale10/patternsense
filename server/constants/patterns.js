@@ -1,0 +1,21 @@
+// Server-side pattern list for dashboard aggregation.
+export const PATTERN_LIST = [
+  { key: 'arrays', label: 'Arrays' },
+  { key: 'trees', label: 'Trees' },
+  { key: 'graphs', label: 'Graphs' },
+  { key: 'dp', label: 'Dynamic Programming' },
+  { key: 'greedy', label: 'Greedy' },
+  { key: 'backtracking', label: 'Backtracking' },
+  { key: 'slidingWindow', label: 'Sliding Window' },
+  { key: 'heap', label: 'Heap' },
+  { key: 'twoPointer', label: 'Two Pointer' },
+  { key: 'binarySearch', label: 'Binary Search' },
+  { key: 'stack', label: 'Stack' },
+  { key: 'queue', label: 'Queue' },
+  { key: 'linkedList', label: 'Linked List' },
+  { key: 'trie', label: 'Trie' },
+  { key: 'unionFind', label: 'Union Find' },
+  { key: 'topologicalSort', label: 'Topological Sort' },
+  { key: 'bitManipulation', label: 'Bit Manipulation' },
+  { key: 'math', label: 'Math' },
+];

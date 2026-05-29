@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+extracted1/
+extracted2/
+files.zip
+files (1).zip
