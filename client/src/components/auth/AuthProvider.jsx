@@ -3,71 +3,51 @@ import { useEffect } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  updateProfile,
+  fetchSignInMethodsForEmail,
 } from 'firebase/auth';
 import { auth, googleProvider, isFirebaseConfigured } from '../../config/firebase.js';
 import { useUserStore } from '../../store/userStore.js';
 import { fetchMe, signup } from '../../services/authService.js';
 import { mockUser } from '../../constants/mockData.js';
 
+async function syncProfile(firebaseUser) {
+  const name = firebaseUser.displayName || firebaseUser.email;
+  const email = firebaseUser.email;
+  await signup({ name, email });
+  const { data } = await fetchMe();
+  return data || { name, email, avatar: firebaseUser.photoURL };
+}
+
 export function useAuthActions() {
   const setUser = useUserStore((s) => s.setUser);
 
+  const getEmailAuthMethods = async (email) => {
+    if (!isFirebaseConfigured || !email) return ['password'];
+    try {
+      return await fetchSignInMethodsForEmail(auth, email);
+    } catch {
+      return [];
+    }
+  };
+
   const login = async (email, password) => {
     if (!isFirebaseConfigured) {
-      try {
-        const { data } = await fetchMe();
-        setUser(data || { ...mockUser, email, name: email.split('@')[0] });
-      } catch {
-        setUser({ ...mockUser, email, name: email.split('@')[0] });
-      }
+      setUser({ ...mockUser, email, name: email.split('@')[0] || 'Learner' });
       return;
     }
     const credential = await signInWithEmailAndPassword(auth, email, password);
-    const { data } = await fetchMe();
-    setUser(data || { name: credential.user.displayName || email, email: credential.user.email });
-  };
-
-  const register = async (email, password, name) => {
-    if (!isFirebaseConfigured) {
-      try {
-        await signup({ name, email });
-        const { data } = await fetchMe();
-        setUser(data || { ...mockUser, name, email });
-      } catch {
-        setUser({ ...mockUser, name, email });
-      }
-      return;
-    }
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    // Persist display name in Firebase so it's available on next auth state change
-    await updateProfile(credential.user, { displayName: name });
-    await signup({ name, email });
-    const { data } = await fetchMe();
-    setUser(data || { name, email: credential.user.email });
+    setUser(await syncProfile(credential.user));
   };
 
   const loginWithGoogle = async () => {
     if (!isFirebaseConfigured) {
-      // Dev fallback — treat as a mock Google login
-      setUser({ ...mockUser, name: 'Google User', email: 'google@patternsense.app' });
+      setUser({ ...mockUser, name: 'Google User', email: 'gmail.user@gmail.com' });
       return;
     }
     const credential = await signInWithPopup(auth, googleProvider);
-    const firebaseUser = credential.user;
-    // Register on backend if first time (signup is idempotent)
-    await signup({ name: firebaseUser.displayName || firebaseUser.email, email: firebaseUser.email });
-    const { data } = await fetchMe();
-    setUser(
-      data || {
-        name: firebaseUser.displayName || firebaseUser.email,
-        email: firebaseUser.email,
-        avatar: firebaseUser.photoURL,
-      },
-    );
+    setUser(await syncProfile(credential.user));
   };
 
   const logout = async () => {
@@ -75,7 +55,7 @@ export function useAuthActions() {
     useUserStore.setState({ user: null, authReady: true, loading: false });
   };
 
-  return { login, register, loginWithGoogle, logout };
+  return { login, loginWithGoogle, logout, getEmailAuthMethods };
 }
 
 export function useAuthState() {
@@ -90,13 +70,11 @@ export default function AuthProvider({ children }) {
   const setAuthReady = useUserStore((s) => s.setAuthReady);
 
   useEffect(() => {
-    let cancelled = false;
-
     if (!isFirebaseConfigured) {
       setAuthReady(true);
       return undefined;
     }
-
+    let cancelled = false;
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (cancelled) return;
       if (!firebaseUser) {
@@ -104,29 +82,12 @@ export default function AuthProvider({ children }) {
         return;
       }
       try {
-        const { data } = await fetchMe();
-        if (!cancelled)
-          setUser(
-            data || {
-              name: firebaseUser.displayName || firebaseUser.email,
-              email: firebaseUser.email,
-              avatar: firebaseUser.photoURL,
-            },
-          );
+        setUser(await syncProfile(firebaseUser));
       } catch {
-        if (!cancelled)
-          setUser({
-            name: firebaseUser.displayName || firebaseUser.email,
-            email: firebaseUser.email,
-            avatar: firebaseUser.photoURL,
-          });
+        if (!cancelled) setUser({ name: firebaseUser.displayName || firebaseUser.email, email: firebaseUser.email });
       }
     });
-
-    return () => {
-      cancelled = true;
-      unsub();
-    };
+    return () => { cancelled = true; unsub(); };
   }, [setUser, setAuthReady]);
 
   return children;

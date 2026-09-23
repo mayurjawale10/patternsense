@@ -6,6 +6,7 @@ import Button from '../../components/common/Button.jsx';
 import { Link } from 'react-router-dom';
 import { ScanSearch, TrendingUp } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboard.js';
+import { useAuth } from '../../hooks/useAuth.js';
 import StatsRow from './StatsRow.jsx';
 import BlindSpotRadar from './BlindSpotRadar.jsx';
 import ActivityHeatmap from './ActivityHeatmap.jsx';
@@ -15,6 +16,8 @@ import QuickActions from './QuickActions.jsx';
 
 export default function DashboardPage() {
   const { data, loading } = useDashboard();
+  const { user } = useAuth();
+  const firstName = (user?.name || 'there').split(' ')[0];
   const isEmpty = data && data.totalSolved === 0;
 
   if (loading) {
@@ -38,7 +41,7 @@ export default function DashboardPage() {
         <div className="glass-card mb-6 flex flex-col items-center justify-between gap-4 p-6 sm:flex-row">
           <div>
             <p className="page-title">Welcome</p>
-            <h2 className="mt-1 text-lg font-semibold text-white">Your journey starts here</h2>
+            <h2 className="mt-1 text-lg font-semibold text-white">Welcome, {firstName}</h2>
             <p className="mt-1 text-sm text-zinc-500">All scores begin at 0. Analyse your first problem to begin tracking.</p>
           </div>
           <Link to="/analyse">

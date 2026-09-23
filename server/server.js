@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDatabase } from './config/db.js';
 import { initFirebase } from './config/firebase.js';
+import { corsOrigin } from './config/cors.js';
 import { errorMiddleware, notFoundMiddleware } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
 import analyseRoutes from './routes/analyseRoutes.js';
@@ -21,7 +22,7 @@ import battleRoutes from './routes/battleRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: process.env.CLIENT_URL || true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 
 initFirebase();
@@ -45,4 +46,4 @@ app.use('/api/battle', battleRoutes);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
-app.listen(PORT, () => console.log(`PatternSense API on :${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`PatternSense API on :${PORT}`));
